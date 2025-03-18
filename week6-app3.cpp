@@ -31,21 +31,23 @@ struct Vector {
         delete[] data;
     }
 
-    T& operator[] (int index) {
+    T& operator[] (int index) const {
+        // size++;
         return data[index];
     }
 
-    auto operator() () {
+    auto operator() () const {
         for(int i=0; i<size; i++)
             cout << (*this)[i] << " ";
         cout << endl;
     }
 
-    operator int() {
+    operator int(/* Vector<T> const * this_*/) const {
+        // size++;
         return size;
     }
 
-    operator string() {
+    operator string() const {
         auto s = string("");
         for(int i=0; i<size; i++) {
             s += (*this)[i];
@@ -55,19 +57,19 @@ struct Vector {
     }
 
     template<typename K>
-    auto convert_to() {
+    auto convert_to() const {
         auto temp = Vector<K>(size);
         for(int i=0; i<size; i++)
             temp[i] = (*this)[i]; //    data[i];
         return temp;
     }
 
-    auto multiply_by(double coef) {
+    auto multiply_by(const double coef) const {
         for(int i=0; i<size; i++)
             (*this)[i] *= coef;
     }
 
-    auto operator*=(double coef) {
+    auto operator*=(double coef) const {
         for(int i=0; i<size; i++)
             (*this)[i] *= coef;
     }
@@ -87,7 +89,7 @@ int main(int argc, char* argv[])
     auto vf = vi.convert_to<float>();
 
     vf();
-    // vf.multiply_by(1.1);
+    vf.multiply_by(1.1);
     vf *= 1.1;
     // vf.operator*=(1.1);
     vf();
