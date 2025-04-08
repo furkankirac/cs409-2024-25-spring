@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(advcpp)
 
@@ -28,3 +28,6 @@ add_executable(w7a2 "week7-app2.cpp")
 add_executable(w7a3 "week7-app3.cpp")
 add_executable(w8a1 "week8-app1.cpp")
 add_executable(w8a2 "week8-app2.cpp")
+add_executable(w9a1 "week9-app1.cpp")
+add_executable(w9a2 "week9-app2.cpp")
+add_executable(w9a3 "week9-app3.cpp")
