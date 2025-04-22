@@ -21,6 +21,7 @@
 // CHATTING ABOUT THE PROJECT WITH A LIVING BEING DURING THE EXAM PERIOD IS FORBIDDEN.
 //
 // HOWEVER, YOU MAY USE ANY HELPER AI SOFTWARE.
+//
 // !!!!!!!!! FORBIDDENS !!!!!!!!!!
 
 // !!!!!!!!!!!! MUSTS !!!!!!!!!!!!
@@ -29,7 +30,7 @@
 // - YOU MUST CREATE List by inheriting from std::list.
 //   List<T> must support everything std::list<T> has.
 // - YOU MUST CREATE Array by inheriting from std::array<T, n>.
-//   Array<T> must support everything std::array<T, n> has.
+//   Array<T, n> must support everything std::array<T, n> has.
 // !!!!!!!!!!!! MUSTS !!!!!!!!!!!!
 
 // <<< Check the main() function for questions and grading >>>
@@ -42,13 +43,103 @@
 //   some have unidirectional iterators (you can go forward one by one)
 //   some have bidirectional iterators (you can go either forward or backward one by one) std::list, std::array
 // - some containers have push_back, some don't
+// - C++ supports multiple-inheritence. You can inherit more than one parent structs
 
 // ------------------------------------------------
 //    YOU CAN'T MODIFY ANYTHING BEFORE THIS LINE
 // VIOLATION WILL RESULT WITH GETTING A ZERO GRADE
 // ------------------------------------------------
 
-// SOLVE HERE
+#include <iostream>
+#include <vector>
+#include <list>
+#include <array>
+
+template<typename C>
+concept isArray = requires {
+    []<int N = C::size()>(){};
+};
+
+using $ = std::pair<unsigned int, unsigned int>;
+constexpr auto end = -1;
+
+void print(auto&& container)
+    requires requires(decltype(container) t) { t.size(); }
+{
+    for(auto&& item : container)
+        std::cout << item << " ";
+    std::cout << std::endl;
+}
+
+void print(auto&& item)      { std::cout << item << std::endl; }
+void print(auto&& ... ts)    { (print(ts), ...); }
+
+
+template<typename Container>
+struct Base : Container {
+    using Container::Container;
+
+    virtual void whoami() const = 0;
+
+    auto get_iter(int idx) const
+        requires requires(Container cont) { cont.begin() + 0; }
+    {
+        return this->begin() + (idx >= 0 ? idx : this->size() + idx);
+    }
+
+    auto get_iter(int idx) const {
+        auto offset = (idx >= 0 ? idx : this->size() + idx);
+        auto iter = this->begin();
+        while(offset--)
+            iter++;
+        return iter;
+    }
+
+    auto operator[](int idx) const {
+        return *get_iter(idx);
+    }
+
+    auto operator()($ rng) const
+        requires (!isArray<Container>)
+    {
+        if(rng.first == end)
+            rng.first = this->size() - 1;
+        if(rng.second == end)
+            rng.second = this->size();
+        auto v = Container{};
+        for(auto it = get_iter(rng.first);
+             it != get_iter(rng.second) && it != this->end();
+             rng.second > rng.first ? it++ : it--)
+            v.push_back(*it);
+        return v;
+    }
+
+    auto operator[](const $ rng) const {
+        return (*this)(rng);
+    }
+};
+
+template<typename ... Ts>
+struct Vector : Base<std::vector<Ts...>> {
+    using Base<std::vector<Ts...>>::Base;
+    void whoami() const override { print("I am a Vector."); }
+};
+
+template<typename ... Ts>
+struct List : Base<std::list<Ts...>> {
+    using Base<std::list<Ts...>>::Base;
+    void whoami() const override { print("I am a List."); }
+};
+
+template<typename T, unsigned int size>
+struct Array : Base<std::array<T, size>>, std::true_type {
+    using Base<std::array<T, size>>::Base;
+    static const auto is_array = true;
+    Array(std::initializer_list<T> init) {
+        std::copy_n(init.begin(), size, this->begin());
+    }
+    void whoami() const override { print("I am an Array."); }
+};
 
 // -----------------------------------------------
 //    YOU CAN'T MODIFY ANYTHING AFTER THIS LINE
@@ -96,7 +187,7 @@ I am an Array.
 // GRADING:
 // Please read the forbiddens and musts section at the top of the file first.
 // You have 6 questions summing up to 67 points.
-// 10 + 12 + 20 + 5 + 10 + 9 = 67
+// 5 + 12 + 16 + 6 + 10 + 18 = 67
 // Solving at least 5 questions correctly with at most 39 semicolumns will get a 1.5 grade multiplier.
 // Solving at least 5 questions correctly with at most 42 semicolumns will get a 1.3 grade multiplier.
 // Solving at least 5 questions correctly with at most 45 semicolumns will get a 1.1 grade multiplier.
